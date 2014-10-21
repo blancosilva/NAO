@@ -1,0 +1,15 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<package uuid="jul11-a67649">
+ <names>
+  <name lang="en_US">jul11</name>
+ </names>
+ <descriptionLanguages>
+  <language>en_US</language>
+ </descriptionLanguages>
+ <contents>
+  <behaviorContent path="jul11">
+   <nature></nature>
+   <permissions/>
+  </behaviorContent>
+ </contents>
+</package>

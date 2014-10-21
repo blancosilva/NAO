@@ -1,0 +1,15 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<package uuid="second2-e42777">
+ <names>
+  <name lang="en_US">second2</name>
+ </names>
+ <descriptionLanguages>
+  <language>en_US</language>
+ </descriptionLanguages>
+ <contents>
+  <behaviorContent path="second">
+   <nature></nature>
+   <permissions/>
+  </behaviorContent>
+ </contents>
+</package>

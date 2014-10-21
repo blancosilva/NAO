@@ -1,0 +1,15 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<package uuid="teamastro-0cdc89">
+ <names>
+  <name lang="en_US">teamastro</name>
+ </names>
+ <descriptionLanguages>
+  <language>en_US</language>
+ </descriptionLanguages>
+ <contents>
+  <behaviorContent path="teamastro">
+   <nature></nature>
+   <permissions/>
+  </behaviorContent>
+ </contents>
+</package>

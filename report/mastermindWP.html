@@ -1,0 +1,205 @@
+<p style="text-align:justify;">I would like to show how to code the NAO robot to beat us at <em>Jotto</em> (5-letter Mastermind) with <code>python</code> in <code>Choregraphe</code>.  I will employ a brute force technique that does not require any knowledge of the English language, the frequency of its letters, or smart combinations of vowels and consonants to try to minimize the number of attempts.  It goes like this:</p>
+<ol style="text-align:justify;">
+<li> Gather all 5-letter words with no repeated letters in a list. </li>
+<li> Choose a random word from that list---your guess---, and ask it to be scored ala Mastermind. </li>
+<li> Filter through the list all words that share the same score with your guess; discard the rest. </li>
+<li> Go back to step 2 and repeat until the target word is found. </li>
+</ol>
+<p style="text-align:justify;">Coding this strategy in <code>python</code> requires only four variables:</p>
+<ul style="text-align:justify;">
+<li> <code>whole_dict</code>: the list with all the words </li>
+<li> <code>step = [x for x in whole_dict]</code>: A copy of <code>whole_dict</code>, which is going to be shortened on each step (hence the name).  Note that stating <code>step = whole_dict</code> will change the contents of <code>whole_dict</code> when we change the contents of <code>step</code> --- not a good idea. </li>
+<li> <code>guess = random.choice(step)</code>: A random choice from the list <code>step</code>. </li>
+<li> <code>score</code>: A string containing the two digits we obtain after scoring the guess.  The first digit indicates the number of correct letters in the same position as the target word; the second digit indicates the number of correct letters in the wrong position. </li>
+<li> <code>attempts</code>: optional.  The number of attempts at guessing words.  For quality control purposes. </li>
+</ul>
+<p style="text-align:justify;">At this point, I urge the reader to stop reading the post and try to implement this strategy as a simple script.  When done, come back to see how it can be coded in the NAO robot.</p>
+<p style="text-align:justify;">First, a screenshot of the <code>root</code> view in choregraph.  Note the simplicity of the code.</p>
+
+<p style="text-align:center;">
+<img src="https://farm4.staticflickr.com/3910/14425999857_b6500621b4_d.jpg" alt="mastermind.png" width="100%" />
+</p>
+
+<p style="text-align:justify;">The first box, <code>ALMemory starter</code>, is a <em>script box</em> where we define all variables needed to run the program --- old school.  This is the code of that box:</p>
+
+[sourcecode, language="python"]
+from urllib2 import urlopen
+
+def no_repeats(word):
+        """ Boolean: indicates whether a word has repeated letters """
+    new_word = ""
+    for letter in word:
+        if letter not in new_word:
+            new_word += letter
+    return new_word == word
+
+# Stole a list of 5-letter words from the following URL
+file = urlopen("http://www.math.sc.edu/~blanco/words.txt")
+words = file.read().split("\n")
+file.close()
+
+# remove words with repeated letters
+words = filter(lambda x: len(x)>0, words)
+words = filter(no_repeats, words)
+
+class MyClass(GeneratedClass):
+    def __init__(self):
+        GeneratedClass.__init__(self)
+        pass
+
+    def onLoad(self):
+        # We start by creating a proxy to the memory of the robot,
+        # where we will insert all the needed variables
+        self.memoryProxy = ALProxy("ALMemory")
+        pass
+
+    def onUnload(self):
+        pass
+
+    def onInput_onStart(self):
+        # These are the variables we need:
+        self.memoryProxy.insertData("whole_dict", words)
+        self.memoryProxy.insertData("step", [x for x in words])
+        self.memoryProxy.insertData("attempts", 0)
+        self.memoryProxy.insertData("score", "00")
+        self.memoryProxy.insertData("guess", None)
+        self.onStopped()
+        pass
+
+    def onInput_onStop(self):
+        self.onUnload()
+        pass
+[/sourcecode]
+
+<p style="text-align:justify;">The second box, <code>Deal with my word</code>, is a <em>flow diagram</em> containing two boxes:</p>
+<ul style="text-align:justify;">
+<li> One simple <em>script box</em>, <code>Say the word</code>.  This box performs the random choice from <code>step</code>, stores it in the variable <code>guess</code>, and increments the value of <code>attempts</code> by one.  It asks then the player if <code>guess</code> is the correct word --- and spells it, just in case. </li>
+<li> A <em>speech recognition box</em> that expects a yes/no answer. </li>
+</ul>
+
+<p style="text-align:center;">
+<img src="https://farm4.staticflickr.com/3898/14610327804_466959a9a5_d.jpg" alt="deal.png" />
+</p>
+
+<p style="text-align:justify;">This is the code of <code>Say the word</code>:</p>
+[sourcecode, language="python"]
+from time import sleep
+from random import choice
+
+class MyClass(GeneratedClass):
+    def __init__(self):
+        GeneratedClass.__init__(self)
+        pass
+
+    def onLoad(self):
+        self.talkProxy = ALProxy("ALTextToSpeech")
+        self.memoryProxy = ALProxy("ALMemory")
+        pass
+
+    def onUnload(self):
+        pass
+
+    def onInput_onStart(self):
+        step = self.memoryProxy.getData("step")
+        guess = choice(step)
+        self.memoryProxy.insertData("guess", guess)
+        attempts = self.memoryProxy.getData("attempts")
+        self.memoryProxy.insertData("attempts", attempts + 1)
+        self.talkProxy.say("Is it %s?" % guess)
+        sleep(1)
+        for letter in guess:
+            self.talkProxy.say(letter)
+            sleep(1)
+        self.onStopped()
+        pass
+
+    def onInput_onStop(self):
+        self.onUnload()
+        pass
+[/sourcecode]
+
+<p style="text-align:justify;">A <em>switch case</em> is next: if the player says "yes", the program concludes with the <em>script box</em> <code>Success!</code>, that states the number of attempts.  The code is simple, and it illustrates once again the way to access data from <code>ALMemory</code>.  The only relevant portions of the code on that box are the methods <code>onLoad</code> and <code>onInput_osStart</code>:</p>
+
+[sourcecode, language="python"]
+    def onLoad(self):
+        self.talkProxy = ALProxy("ALTextToSpeech")
+        self.memoryProxy = ALProxy("ALMemory")
+        pass
+
+    def onInput_onStart(self):
+        attempts = self.memoryProxy.getData("attempts")
+        self.talkProxy.say("Wonderful!  I got it in %s attempts!" % str(attempts))
+        pass
+[/sourcecode]
+
+<p style="text-align:justify;">If the player says "no", we retrieve the two scores with two <em>flow diagram</em> boxes: <code>First Score</code> and <code>Second Score</code>.  I will present the structure and code of the latter, and leave the code of the former as an exercise.</p>
+
+<p style="text-align:center;">
+<img src="https://farm4.staticflickr.com/3900/14425751180_279c59f295_d.jpg" alt="secondscore.png" />
+</p>
+
+<p style="text-align:justify;">The first box is a simple <em>Say</em> that asks for the score.  The second box is a <em>Speech Recognition</em> box that expects any digit from 0 to 5.  The third is a <em>script box</em> that receives the second box output (as a <code>string</code>), and performs the following operation (only <code>onLoad</code> and <code>onInput_onStart</code> are shown):</p>
+
+[sourcecode, language="python"]
+    def onLoad(self):
+        self.memoryProxy = ALProxy("ALMemory")
+        pass
+
+    def onInput_onStart(self, p):
+        score = self.memoryProxy.getData("score")
+        score = score[0] + p
+        self.memoryProxy.insertData("score", score)
+        self.onStopped()
+        pass
+[/sourcecode]
+
+<p style="text-align:justify;">And finally, the <em>script box</em> <code>Say the score</code>.  This is where the magic happens.  In this box we receive the complete score, and filter all the words from <code>step</code> to eliminate those that do not share the same score as <code>guess</code>.  We perform that with the following code:</p>
+
+[sourcecode, language="python"]
+def compute_score(guess, target):
+        """ This function scores guess against target,
+            mastermind style """
+    correct = 0
+    moved = 0
+    for x in range(5):
+        if guess[x] in target:
+            if guess[x] == target[x]:
+                correct += 1
+            else:
+                moved += 1
+    return str(correct)+str(moved)
+
+def register_score(score, step, guess):
+        """  a simple fliter to eliminate unwanted words from step """
+    return filter(lambda x: compute_score(guess, x)==score, step)
+
+class MyClass(GeneratedClass):
+    def __init__(self):
+        GeneratedClass.__init__(self)
+        pass
+
+    def onLoad(self):
+        self.memoryProxy = ALProxy("ALMemory")
+        self.talkProxy = ALProxy("ALTextToSpeech")
+        pass
+
+    def onUnload(self):
+        pass
+
+    def onInput_onStart(self):
+        score = self.memoryProxy.getData("score")
+        step = self.memoryProxy.getData("step")
+        guess = self.memoryProxy.getData("guess")
+        self.talkProxy.say("So, the score of %s is %s %s" % (guess, score[0], score[1]))
+        step = register_score(score, step, guess)
+        #self.talkProxy.say("We are down to %s words" % str(len(step)))
+        self.memoryProxy.insertData("step", step)
+        self.onStopped()
+        pass
+
+    def onInput_onStop(self):
+        self.onUnload()
+        pass
+[/sourcecode]
+
+<p style="text-align:justify;">That is all!  I hope you enjoy playing <em>Jotto</em> with your NAO.  The code can be greatly improved by adding motions in the different steps, or implementing better winning strategies.  With brute force, NAO is able to find your word in about 5 attempts (as average, of course).  Do you think you can find a strategy that brings this number down to 4 attempts?  If so, I would love to hear about it.</p>

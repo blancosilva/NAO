@@ -1,0 +1,15 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<package uuid="first-a1500a">
+ <names>
+  <name lang="en_US">first</name>
+ </names>
+ <descriptionLanguages>
+  <language>en_US</language>
+ </descriptionLanguages>
+ <contents>
+  <behaviorContent path="first.brg">
+   <nature></nature>
+   <permissions/>
+  </behaviorContent>
+ </contents>
+</package>

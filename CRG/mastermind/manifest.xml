@@ -1,0 +1,15 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<package uuid="mastermind-e62b53">
+ <names>
+  <name lang="en_US">mastermind</name>
+ </names>
+ <descriptionLanguages>
+  <language>en_US</language>
+ </descriptionLanguages>
+ <contents>
+  <behaviorContent path="mastermind">
+   <nature></nature>
+   <permissions/>
+  </behaviorContent>
+ </contents>
+</package>
